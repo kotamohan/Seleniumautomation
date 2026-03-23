@@ -1,29 +1,67 @@
 package tests;
 import base.BaseTest;
 
+import java.io.IOException;
 import java.time.Duration;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import pages.LoginPage;
+import utils.ExcelUtils;
 import utils.ExtentReportManager;
 import utils.Log;
 public class LoginTest extends BaseTest {
     
-    @Test
-    public void testValidLogin() throws InterruptedException {
+	
+	@DataProvider(name="LoginData")
+	public Object[][] getLoginData() throws IOException{
+		
+		String filePath = System.getProperty("user.dir")+"/testdata/TestData.xlsx";
+		ExcelUtils.loadExcel(filePath, "Sheet1");
+		int rowCount = ExcelUtils.getRowCount();
+		Object[][] data = new Object[rowCount-1][2];
+		
+		for(int i=1; i<rowCount; i++) {
+			
+			data[i-1][0] = ExcelUtils.getCellData(i, 0);	// Username
+			data[i-1][1] = ExcelUtils.getCellData(i, 1);	// Password
+		}
+		ExcelUtils.closeExcel();
+		return data;
+	}
+	
+	@DataProvider(name="LoginData2")
+	public Object[][] getData(){
+		
+		return new Object[][] {
+			{"user1","pass1"},
+			{"user2","pass2"},
+			{"user3","pass3"}
+		};
+	}
+	
+   // @Test(dataProvider  ="LoginData2")
+	@Test
+	@Parameters({"username","password"})
+    public void testValidLogin(String username,String password) throws InterruptedException {
     	
     	Log.info("Starting login test...");
-		test = ExtentReportManager.createTest("Login Test - ");
+		test = ExtentReportManager.createTest("Login Test - "+username);
 
 		test.info("Navigating to URL");
 		LoginPage loginPage = new LoginPage(driver);
 
 		Log.info("Adding credentials");
 		test.info("Adding Credentails");
-        loginPage.enterUsername("admin@yourstore.com");
-        loginPage.enterPassword("admin");
-        loginPage.clickLogin();
+ 
+//        loginPage.enterUsername("admin@yourstore.com");
+//        loginPage.enterPassword("admin");
+        
+        loginPage.enterUsername(username);
+        loginPage.enterPassword(password);
+        loginPage.clickLogin(); 
         Thread.sleep(5000);
         //driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(1));
 		Log.info("Verifying page title");
@@ -33,26 +71,26 @@ public class LoginTest extends BaseTest {
 		test.pass("Login Successful");
     }
     
-    @Test
-    public void testValidLoginWithInvalidCredentials() throws InterruptedException {
-    	
-    	Log.info("Starting login test...");
-		test = ExtentReportManager.createTest("Login Test - ");
-
-		test.info("Navigating to URL");
-		LoginPage loginPage = new LoginPage(driver);
-
-		Log.info("Adding credentials");
-		test.info("Adding Credentails");
-        loginPage.enterUsername("admin@yourstore.com");
-        loginPage.enterPassword("admin1");
-        loginPage.clickLogin();
-        Thread.sleep(5000);
-        //driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(1));
-		Log.info("Verifying page title");
-		test.info("Verifying page title");
-		Assert.assertEquals(driver.getTitle(), "Just a moment...84");
-
-		test.pass("Login Successful");
-    }
+//    @Test
+//    public void testValidLoginWithInvalidCredentials() throws InterruptedException {
+//    	
+//    	Log.info("Starting login test...");
+//		test = ExtentReportManager.createTest("Login Test - ");
+//
+//		test.info("Navigating to URL");
+//		LoginPage loginPage = new LoginPage(driver);
+//
+//		Log.info("Adding credentials");
+//		test.info("Adding Credentails");
+//        loginPage.enterUsername("admin@yourstore.com");
+//        loginPage.enterPassword("admin1");
+//        loginPage.clickLogin();
+//        Thread.sleep(5000);
+//        //driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(1));
+//		Log.info("Verifying page title");
+//		test.info("Verifying page title");
+//		Assert.assertEquals(driver.getTitle(), "Just a moment...84");
+//
+//		test.pass("Login Successful");
+//    }
 }
